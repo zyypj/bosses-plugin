@@ -1,0 +1,4 @@
+name: Bosses
+version: '${project.version}'
+main: com.github.zyypj.bosses.BossesPlugin
+authors: [tadeu]

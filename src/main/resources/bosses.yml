@@ -1,0 +1,31 @@
+bosses:
+  BossCreeper:
+    entity: 'CREEPER'
+    health: 1000
+    name: "&a&lBOSS CREEPER"
+    only-matadora: true
+
+    egg:
+      # Material:DATA
+      material: MONSTER_EGG:50
+      glow: true
+      name: "&a&lBOSS CREAPER"
+      lore:
+        - "&fHP: &4❤&c1000&f."
+
+    options:
+      ai: false
+
+    message-for-kill:
+        - ""
+        - "&a&lBOSS CREEPER: &7Parabéns guerreiro, você conseguiu me matar. Recolha suas recompensas no &f&n/boss&7."
+        - ""
+
+    action-bar:
+      on-hit: "&a&lBOSS CREEPER &7> &c❤ {HEALTH} &4[-{DAMAGE}] {PROGRESS-BAR}"
+      # Botão Direito
+      on-interact: "&a&lBOSS CREEPER &7> &c❤ {HEALTH} {PROGRESS-BAR}"
+
+    recompensas:
+      # {CHANCE DE SER ESSA RECOMPENSA,RECOMPENSA}
+      - '100,Reco1'

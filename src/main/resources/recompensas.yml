@@ -1,0 +1,17 @@
+recompensas:
+  reco1:
+    item:
+      material: STONE:0
+      glow: false
+      name: "&8Pedra"
+      amount: 64
+      lore:
+        - "&7Eu valho muito"
+      enchants:
+        - ''
+
+    money: 0
+    command:
+      use-command: true
+      commands:
+        - 'give {PLAYER} stone {AMOUNT}'

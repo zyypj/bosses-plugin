@@ -1,0 +1,18 @@
+matadoras:
+  default:
+    # 0 caso seja hit-kill
+    damage: 20
+    nome: "&7Padrão"
+
+    item:
+      material: DIAMOND_SWORD:0
+      glow: true
+      name: "&aMatadora de Bosses"
+      amount: 64
+      lore:
+        - '&7Essa espada fornece mais'
+        - '&7dano aos bosses!'
+        - ''
+        - ' &fDano: &c20❤'
+      enchants:
+        - ''

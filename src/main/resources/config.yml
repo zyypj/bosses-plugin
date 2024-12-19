@@ -1,0 +1,20 @@
+debug: true
+
+# Caso seja true, o jogador conseguirá colocar o boss apenas nas plots
+only-plot: false
+
+# Caso seja true, a matadora não quebrará
+matadora-inquebravel: true
+
+mundos-bloqueados:
+  - "world1"
+  - "world2"
+  - "world3"
+
+boss-per-player: 20
+
+# Aqui, todas as mensagens suportam tanto uma linha de mensagem ou uma lista de mensagens
+messages:
+  no-permission: "&cVocê não tem permissão para isso!"
+  receive-boss: "&aVocê recebeu {AMOUNT}x do boss {BOSS-NAME}"
+  receive-matadora: "&aVocê recebeu a matadora {MATADORA-NAME}"
