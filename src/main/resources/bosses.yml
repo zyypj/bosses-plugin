@@ -2,7 +2,7 @@ bosses:
   BossCreeper:
     entity: 'CREEPER'
     health: 1000
-    name: "&a&lBOSS CREEPER"
+    name: "&a&lBOSS CREEPER &c❤{HEALTH}"
     only-matadora: true
 
     egg:

@@ -2,7 +2,9 @@ package com.github.zyypj.bosses.config;
 
 import com.github.zyypj.bosses.BossesPlugin;
 import com.github.zyypj.bosses.utils.ItemBuilder;
+import com.github.zyypj.bosses.utils.Text;
 import de.tr7zw.nbtapi.NBTItem;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -15,7 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
-public class MatadoraConfigManager {
+@Getter
+public class MatadoraConfig {
 
     private final BossesPlugin plugin;
     private File matadoraFile;
@@ -45,9 +48,9 @@ public class MatadoraConfigManager {
         String[] materialParts = materialData.split(":");
         Material material = Material.getMaterial(materialParts[0]);
         int data = materialParts.length > 1 ? Integer.parseInt(materialParts[1]) : 0;
-        
-        String name = matadoraSection.getString("item.name", "Matadora de Bosses");
-        List<String> lore = matadoraSection.getStringList("item.lore");
+
+        String name = Text.colorTranslate(matadoraSection.getString("item.name", "Matadora de Bosses"));
+        List<String> lore = Text.colorTranslate(matadoraSection.getStringList("item.lore"));
         boolean glow = matadoraSection.getBoolean("item.glow", false);
         int amount = matadoraSection.getInt("item.amount", 1);
 
@@ -70,5 +73,14 @@ public class MatadoraConfigManager {
             return new ArrayList<>();
         }
         return new ArrayList<>(section.getKeys(false));
+    }
+
+    public double getMatadoraDamage(String matadoraName) {
+        ConfigurationSection matadoraSection = matadoraConfig.getConfigurationSection("matadoras." + matadoraName);
+        if (matadoraSection == null) {
+            plugin.debug("§cMatadora não encontrada: " + matadoraName, true);
+            return 0;
+        }
+        return matadoraSection.getDouble("damage", 0);
     }
 }

@@ -2,6 +2,7 @@ package com.github.zyypj.bosses.config;
 
 import com.github.zyypj.bosses.BossesPlugin;
 import com.github.zyypj.bosses.utils.ItemBuilder;
+import com.github.zyypj.bosses.utils.Text;
 import de.tr7zw.nbtapi.NBTItem;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Getter
-public class BossConfigManager {
+public class BossConfig {
 
     private final BossesPlugin plugin;
     private File bossFile;
@@ -47,8 +48,8 @@ public class BossConfigManager {
         Material material = Material.getMaterial(materialParts[0]);
         int data = materialParts.length > 1 ? Integer.parseInt(materialParts[1]) : 0;
 
-        String name = bossSection.getString("egg.name", "Boss Egg");
-        List<String> lore = bossSection.getStringList("egg.lore");
+        String name = Text.colorTranslate(bossSection.getString("egg.name", "Boss Egg"));
+        List<String> lore = Text.colorTranslate(bossSection.getStringList("egg.lore"));
         boolean glow = bossSection.getBoolean("egg.glow", false);
 
         ItemStack bossEgg = new ItemBuilder(material)
@@ -57,7 +58,6 @@ public class BossConfigManager {
                 .lore(lore)
                 .glow(glow)
                 .build();
-
 
         NBTItem nbtItem = new NBTItem(bossEgg);
         nbtItem.setString("bossName", bossName);

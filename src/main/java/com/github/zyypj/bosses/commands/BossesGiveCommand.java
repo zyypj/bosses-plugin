@@ -1,9 +1,9 @@
 package com.github.zyypj.bosses.commands;
 
 import com.github.zyypj.bosses.BossesPlugin;
-import com.github.zyypj.bosses.config.BossConfigManager;
-import com.github.zyypj.bosses.config.ConfigManager;
-import com.github.zyypj.bosses.config.MatadoraConfigManager;
+import com.github.zyypj.bosses.config.BossConfig;
+import com.github.zyypj.bosses.config.MessagesConfig;
+import com.github.zyypj.bosses.config.MatadoraConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -19,22 +19,22 @@ import java.util.List;
 public class BossesGiveCommand implements CommandExecutor, TabCompleter {
 
     private final BossesPlugin plugin;
-    private final ConfigManager configManager;
-    private final BossConfigManager bossConfigManager;
-    private final MatadoraConfigManager matadoraConfigManager;
+    private final MessagesConfig messagesConfig;
+    private final BossConfig bossConfig;
+    private final MatadoraConfig matadoraConfig;
 
     public BossesGiveCommand(BossesPlugin plugin) {
         this.plugin = plugin;
-        this.configManager = plugin.getConfigManager();
-        this.bossConfigManager = plugin.getBossConfigManager();
-        this.matadoraConfigManager = plugin.getMatadoraConfigManager();
+        this.messagesConfig = plugin.getMessagesConfig();
+        this.bossConfig = plugin.getBossConfig();
+        this.matadoraConfig = plugin.getMatadoraConfig();
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 
         if (!sender.hasPermission("bosses.give")) {
-            sender.sendMessage(configManager.getMessage("no-permission"));
+            sender.sendMessage(messagesConfig.getMessage("no-permission"));
             plugin.debug("O comando foi tentado sem permissão por: " + sender.getName(), true);
             return false;
         }
@@ -55,14 +55,14 @@ public class BossesGiveCommand implements CommandExecutor, TabCompleter {
 
         switch (type) {
             case "boss":
-                ItemStack bossEgg = bossConfigManager.getBossEgg(name);
+                ItemStack bossEgg = bossConfig.getBossEgg(name);
                 if (bossEgg == null) {
                     sender.sendMessage("§cBoss não encontrado: " + name);
                     return false;
                 }
 
                 target.getInventory().addItem(bossEgg);
-                target.sendMessage(configManager.getMessage("receive-boss")
+                target.sendMessage(messagesConfig.getMessage("receive-boss")
                         .replace("{AMOUNT}", "1")
                         .replace("{BOSS-NAME}", bossEgg.getItemMeta().getDisplayName()));
 
@@ -73,14 +73,14 @@ public class BossesGiveCommand implements CommandExecutor, TabCompleter {
                 break;
 
             case "matadora":
-                ItemStack matadora = matadoraConfigManager.getMatadoraItem(name);
+                ItemStack matadora = matadoraConfig.getMatadoraItem(name);
                 if (matadora == null) {
                     sender.sendMessage("§cMatadora não encontrada: " + name);
                     return false;
                 }
 
                 target.getInventory().addItem(matadora);
-                target.sendMessage(configManager.getMessage("receive-matadora")
+                target.sendMessage(messagesConfig.getMessage("receive-matadora")
                         .replace("{AMOUNT}", "1")
                         .replace("{MATADORA-NAME}", matadora.getItemMeta().getDisplayName()));
 
@@ -111,9 +111,9 @@ public class BossesGiveCommand implements CommandExecutor, TabCompleter {
             completions.add("matadora");
         } else if (args.length == 2) {
             if (args[0].equalsIgnoreCase("boss")) {
-                completions.addAll(bossConfigManager.getBosses());
+                completions.addAll(bossConfig.getBosses());
             } else if (args[0].equalsIgnoreCase("matadora")) {
-                completions.addAll(matadoraConfigManager.getMatadoras());
+                completions.addAll(matadoraConfig.getMatadoras());
             }
         } else if (args.length == 3) {
             Bukkit.getOnlinePlayers().forEach(player -> completions.add(player.getName()));

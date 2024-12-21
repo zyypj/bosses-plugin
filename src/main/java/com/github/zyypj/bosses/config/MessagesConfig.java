@@ -6,12 +6,12 @@ import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.List;
 
-public class ConfigManager {
+public class MessagesConfig {
 
     private final BossesPlugin plugin;
     private final FileConfiguration config;
 
-    public ConfigManager(BossesPlugin plugin) {
+    public MessagesConfig(BossesPlugin plugin) {
         this.plugin = plugin;
         this.config = plugin.getConfig();
     }

@@ -1,21 +1,25 @@
 package com.github.zyypj.bosses;
 
 import com.github.zyypj.bosses.commands.BossesGiveCommand;
-import com.github.zyypj.bosses.config.BossConfigManager;
-import com.github.zyypj.bosses.config.ConfigManager;
-import com.github.zyypj.bosses.config.MatadoraConfigManager;
-import com.github.zyypj.bosses.listeners.BossPlaceListener;
+import com.github.zyypj.bosses.config.BossConfig;
+import com.github.zyypj.bosses.config.MessagesConfig;
+import com.github.zyypj.bosses.config.MatadoraConfig;
+import com.github.zyypj.bosses.config.RecompensasConfig;
+import com.github.zyypj.bosses.listeners.BossDamageListener;
+import com.github.zyypj.bosses.listeners.BossInteractListener;
 import com.google.common.base.Stopwatch;
 import lombok.Getter;
 import org.bukkit.Bukkit;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 @Getter
 public final class BossesPlugin extends JavaPlugin {
 
-    private ConfigManager configManager;
-    private BossConfigManager bossConfigManager;
-    private MatadoraConfigManager matadoraConfigManager;
+    private MessagesConfig messagesConfig;
+    private RecompensasConfig recompensasConfig;
+    private BossConfig bossConfig;
+    private MatadoraConfig matadoraConfig;
 
     @Override
     public void onEnable() {
@@ -27,7 +31,7 @@ public final class BossesPlugin extends JavaPlugin {
         loadConfigs();
 
         registerCommands();
-        registerListeners();
+        registerListener();
 
         debug(" ", false);
         debug("&2&lPlugin de Bosses&2 iniciado em " + stopwatch.stop() + "!", false);
@@ -63,13 +67,16 @@ public final class BossesPlugin extends JavaPlugin {
 
         saveDefaultConfig();
 
-        configManager = new ConfigManager(this);
+        messagesConfig = new MessagesConfig(this);
 
-        bossConfigManager = new BossConfigManager(this);
-        bossConfigManager.load();
+        recompensasConfig = new RecompensasConfig(this);
+        recompensasConfig.load();
 
-        matadoraConfigManager = new MatadoraConfigManager(this);
-        matadoraConfigManager.load();
+        bossConfig = new BossConfig(this);
+        bossConfig.load();
+
+        matadoraConfig = new MatadoraConfig(this);
+        matadoraConfig.load();
 
         debug("&aConfigurações carregadas em " + stopwatch.stop() + "!", true);
         debug(" ", false);
@@ -91,16 +98,25 @@ public final class BossesPlugin extends JavaPlugin {
 
     }
 
-    private void registerListeners() {
+    private void registerListener() {
 
         Stopwatch stopwatch = Stopwatch.createStarted();
         debug(" ", false);
         debug("&eRegistrando eventos...", true);
 
-        getServer().getPluginManager().registerEvents(new BossPlaceListener(this), this);
+        registerListeners(
+                new BossInteractListener(this),
+                new BossDamageListener(this)
+        );
 
         debug("&aEventos registrados em " + stopwatch.stop() + "!", true);
         debug(" ", false);
 
+    }
+
+    private void registerListeners(Listener... listeners) {
+        for (Listener listener : listeners) {
+            getServer().getPluginManager().registerEvents(listener, this);
+        }
     }
 }
