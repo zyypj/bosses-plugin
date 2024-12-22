@@ -8,10 +8,11 @@ bosses:
     egg:
       # Material:DATA
       material: MONSTER_EGG:50
+      # Se true, o item será "brilhará"
       glow: true
       name: "&a&lBOSS CREAPER"
       lore:
-        - "&fHP: &4❤&c1000&f."
+        - "&fHP: &4❤&c1000&f"
 
     options:
       ai: false
@@ -28,4 +29,4 @@ bosses:
 
     recompensas:
       # {CHANCE DE SER ESSA RECOMPENSA,RECOMPENSA}
-      - '100,Reco1'
+      - '100,reco1'

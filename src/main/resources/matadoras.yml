@@ -6,6 +6,7 @@ matadoras:
 
     item:
       material: DIAMOND_SWORD:0
+      # Se true, o item será "brilhará"
       glow: true
       name: "&aMatadora de Bosses"
       amount: 64
@@ -13,6 +14,6 @@ matadoras:
         - '&7Essa espada fornece mais'
         - '&7dano aos bosses!'
         - ''
-        - ' &fDano: &c20❤'
+        - ' &fDano: &4❤&c20'
       enchants:
         - ''

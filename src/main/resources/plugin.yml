@@ -1,6 +1,8 @@
 name: Bosses
 version: '${project.version}'
 main: com.github.zyypj.bosses.BossesPlugin
+depend: [PlotSquared]
 authors: [tadeu]
 commands:
   bossesGive:
+  bosses:

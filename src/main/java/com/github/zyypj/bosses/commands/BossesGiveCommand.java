@@ -40,7 +40,7 @@ public class BossesGiveCommand implements CommandExecutor, TabCompleter {
         }
 
         if (args.length != 3) {
-            sender.sendMessage("§cUso correto: /bossesGive <boss|matadora> <nome> <jogador>");
+            sender.sendMessage("§cUse: /bossesGive <boss|matadora> <nome> <jogador>");
             return false;
         }
 
@@ -49,7 +49,8 @@ public class BossesGiveCommand implements CommandExecutor, TabCompleter {
         Player target = Bukkit.getPlayer(args[2]);
 
         if (target == null) {
-            sender.sendMessage("§cJogador não encontrado: " + args[2]);
+            sender.sendMessage(plugin.getMessagesConfig().getMessage("player-not-found")
+                    .replace("{NAME}", args[2]));
             return false;
         }
 
@@ -57,7 +58,8 @@ public class BossesGiveCommand implements CommandExecutor, TabCompleter {
             case "boss":
                 ItemStack bossEgg = bossConfig.getBossEgg(name);
                 if (bossEgg == null) {
-                    sender.sendMessage("§cBoss não encontrado: " + name);
+                    sender.sendMessage(plugin.getMessagesConfig().getMessage("boss-not-found")
+                            .replace("{NAME}", name));
                     return false;
                 }
 
@@ -75,7 +77,8 @@ public class BossesGiveCommand implements CommandExecutor, TabCompleter {
             case "matadora":
                 ItemStack matadora = matadoraConfig.getMatadoraItem(name);
                 if (matadora == null) {
-                    sender.sendMessage("§cMatadora não encontrada: " + name);
+                    sender.sendMessage(plugin.getMessagesConfig().getMessage("matadora-not-found")
+                            .replace("{NAME}", name));
                     return false;
                 }
 

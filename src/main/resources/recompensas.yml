@@ -2,6 +2,7 @@ recompensas:
   reco1:
     item:
       material: STONE:0
+      # Se true, o item será "brilhará"
       glow: false
       name: "&8Pedra"
       amount: 64

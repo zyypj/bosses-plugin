@@ -1,8 +1,10 @@
 package com.github.zyypj.bosses.listeners;
 
 import com.github.zyypj.bosses.BossesPlugin;
+import com.github.zyypj.bosses.api.events.BossPlaceEvent;
 import com.github.zyypj.bosses.utils.ActionBar;
-import com.github.zyypj.bosses.utils.ProgressBar;
+import com.intellectualcrafters.plot.api.PlotAPI;
+import com.intellectualcrafters.plot.object.Plot;
 import de.tr7zw.nbtapi.NBTEntity;
 import de.tr7zw.nbtapi.NBTItem;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 public class BossInteractListener implements Listener {
 
     private final BossesPlugin plugin;
+    private final PlotAPI plotAPI = new PlotAPI();
 
     @EventHandler
     public void onPlayerPlaceBoss(PlayerInteractEvent e) {
@@ -56,6 +59,31 @@ public class BossInteractListener implements Listener {
 
         LivingEntity boss = (LivingEntity) player.getWorld().spawnEntity(player.getLocation(), entityType);
 
+        BossPlaceEvent bossPlaceEvent = new BossPlaceEvent(player, boss, bossName, item);
+        plugin.getServer().getPluginManager().callEvent(bossPlaceEvent);
+
+        if (bossPlaceEvent.isCancelled()) {
+            boss.remove();
+            return;
+        }
+
+        plugin.getDatabaseManager().addBossPlaced(player);
+
+        Plot plot = plotAPI.getPlot(player.getLocation());
+        if (plot == null) {
+            player.sendMessage(plugin.getMessagesConfig().getMessage("cant-place"));
+            bossPlaceEvent.setCancelled(true);
+            boss.remove();
+            return;
+        }
+
+        if (!plot.isOwner(player.getUniqueId()) && !plot.getTrusted().contains(player.getUniqueId())) {
+            player.sendMessage(plugin.getMessagesConfig().getMessage("cant-place"));
+            bossPlaceEvent.setCancelled(true);
+            boss.remove();
+            return;
+        }
+
         NBTEntity nbtEntity = new NBTEntity(boss);
         nbtEntity.setString("bossName", bossName);
 
@@ -86,10 +114,24 @@ public class BossInteractListener implements Listener {
 
         String actionBarMessage = bossConfig.getString("action-bar.on-interact");
 
-        if (actionBarMessage != null && !actionBarMessage.isEmpty()) {
+        if (!actionBarMessage.isEmpty()) {
+            int totalBars = 30;
+            int healthBars = (int) Math.round((health / boss.getMaxHealth()) * totalBars);
+            int emptyBars = totalBars - healthBars;
+
+            StringBuilder healthBar = new StringBuilder();
+            for (int i = 0; i < healthBars; i++) {
+                healthBar.append("|");
+            }
+
+            StringBuilder emptyBar = new StringBuilder();
+            for (int i = 0; i < emptyBars; i++) {
+                emptyBar.append("|");
+            }
+
             String formattedMessage = ChatColor.translateAlternateColorCodes('&', actionBarMessage)
-                    .replace("{HEALTH}", String.valueOf(boss.getHealth()))
-                    .replace("{PROGRESS-BAR}", ProgressBar.getBar(100, "|", "-", "§a", "§c", 10));
+                    .replace("{HEALTH}", String.valueOf((int) health))
+                    .replace("{PROGRESS-BAR}", "§a" + healthBar + "§c" + emptyBar);
 
             ActionBar.sendActionBarMessage(player, formattedMessage);
         }
@@ -118,10 +160,24 @@ public class BossInteractListener implements Listener {
         String actionBarMessage = plugin.getBossConfig().getBossConfig()
                 .getString("bosses." + bossName + ".action-bar.on-interact", "");
 
-        if (actionBarMessage != null && !actionBarMessage.isEmpty()) {
+        if (!actionBarMessage.isEmpty()) {
+            int totalBars = 30;
+            int healthBars = (int) Math.round((health / maxHealth) * totalBars);
+            int emptyBars = totalBars - healthBars;
+
+            StringBuilder healthBar = new StringBuilder();
+            for (int i = 0; i < healthBars; i++) {
+                healthBar.append("|");
+            }
+
+            StringBuilder emptyBar = new StringBuilder();
+            for (int i = 0; i < emptyBars; i++) {
+                emptyBar.append("|");
+            }
+
             String formattedMessage = ChatColor.translateAlternateColorCodes('&', actionBarMessage)
                     .replace("{HEALTH}", String.valueOf((int) health))
-                    .replace("{PROGRESS-BAR}", ProgressBar.getBar((health / maxHealth) * 100, "|", "-", "§a", "§c", 10));
+                    .replace("{PROGRESS-BAR}", "§a" + healthBar + "§c" + emptyBar);
 
             ActionBar.sendActionBarMessage(player, formattedMessage);
         }

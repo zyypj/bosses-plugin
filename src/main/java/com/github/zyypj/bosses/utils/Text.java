@@ -9,7 +9,7 @@ public class Text {
     }
 
     public static List<String> colorTranslate(List<String> stringList) {
-        stringList.replaceAll(s -> s.replace("&", "ยง"));
+        stringList.replaceAll(s -> s.replace("&", "§"));
         return stringList;
     }
 

@@ -1,10 +1,12 @@
 package com.github.zyypj.bosses;
 
+import com.github.zyypj.bosses.commands.BossesCommand;
 import com.github.zyypj.bosses.commands.BossesGiveCommand;
 import com.github.zyypj.bosses.config.BossConfig;
 import com.github.zyypj.bosses.config.MessagesConfig;
 import com.github.zyypj.bosses.config.MatadoraConfig;
 import com.github.zyypj.bosses.config.RecompensasConfig;
+import com.github.zyypj.bosses.database.DatabaseManager;
 import com.github.zyypj.bosses.listeners.BossDamageListener;
 import com.github.zyypj.bosses.listeners.BossInteractListener;
 import com.google.common.base.Stopwatch;
@@ -21,6 +23,8 @@ public final class BossesPlugin extends JavaPlugin {
     private BossConfig bossConfig;
     private MatadoraConfig matadoraConfig;
 
+    private DatabaseManager databaseManager;
+
     @Override
     public void onEnable() {
 
@@ -29,6 +33,7 @@ public final class BossesPlugin extends JavaPlugin {
         debug("&eIniciando plugin de bosses...", false);
 
         loadConfigs();
+        setupDatabase();
 
         registerCommands();
         registerListener();
@@ -83,6 +88,19 @@ public final class BossesPlugin extends JavaPlugin {
 
     }
 
+    private void setupDatabase() {
+
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        debug(" ", false);
+        debug("&eConectando database...", true);
+
+        databaseManager = new DatabaseManager(this);
+
+        debug("&aDatabase conectada em " + stopwatch.stop() + "!", true);
+        debug(" ", false);
+
+    }
+
     private void registerCommands() {
 
         Stopwatch stopwatch = Stopwatch.createStarted();
@@ -92,6 +110,8 @@ public final class BossesPlugin extends JavaPlugin {
         BossesGiveCommand bossesGiveCommand = new BossesGiveCommand(this);
         getCommand("bossesGive").setExecutor(bossesGiveCommand);
         getCommand("bossesGive").setTabCompleter(bossesGiveCommand);
+
+        getCommand("bosses").setExecutor(new BossesCommand(this));
 
         debug("&aComandos registrados em " + stopwatch.stop() + "!", true);
         debug(" ", false);

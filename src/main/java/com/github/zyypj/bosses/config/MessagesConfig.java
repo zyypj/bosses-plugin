@@ -9,7 +9,7 @@ import java.util.List;
 public class MessagesConfig {
 
     private final BossesPlugin plugin;
-    private final FileConfiguration config;
+    private FileConfiguration config;
 
     public MessagesConfig(BossesPlugin plugin) {
         this.plugin = plugin;
@@ -31,5 +31,10 @@ public class MessagesConfig {
         }
 
         return "§cMensagem não encontrada: " + path;
+    }
+
+    public void reload() {
+        plugin.reloadConfig();
+        this.config = plugin.getConfig();
     }
 }

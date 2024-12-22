@@ -40,7 +40,7 @@ public class RecompensasConfig {
 
         String materialData = rewardSection.getString("item.material", "STONE:0");
         String[] materialParts = materialData.split(":");
-        Material material = Material.getMaterial(materialParts[1]);
+        Material material = Material.getMaterial(materialParts[0]);
         int data = materialParts.length > 1 ? Integer.parseInt(materialParts[1]) : 0;
 
         String name = rewardSection.getString("item.name", "Recompensa");

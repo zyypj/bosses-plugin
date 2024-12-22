@@ -1,16 +1,21 @@
 package com.github.zyypj.bosses.listeners;
 
 import com.github.zyypj.bosses.BossesPlugin;
+import com.github.zyypj.bosses.api.events.BossDeathEvent;
 import com.github.zyypj.bosses.utils.ActionBar;
 import com.github.zyypj.bosses.utils.ProgressBar;
+import de.tr7zw.nbtapi.NBTItem;
 import lombok.RequiredArgsConstructor;
+import lombok.var;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
 
@@ -37,13 +42,15 @@ public class BossDamageListener implements Listener {
         String bossName = getBossMetadata(boss);
         if (bossName == null) return;
 
-        boolean onlyMatadora = plugin.getBossConfig().getBossConfig()
-                .getBoolean("bosses." + bossName + ".only-matadora", false);
+        var bossConfig = plugin.getBossConfig().getBossConfig().getConfigurationSection("bosses." + bossName);
+
+        boolean onlyMatadora = bossConfig.getBoolean("only-matadora");
 
         ItemStack itemInHand = player.getInventory().getItemInHand();
         double damage = e.getDamage();
 
         if (onlyMatadora && !isMatadora(itemInHand)) {
+            player.sendMessage(plugin.getMessagesConfig().getMessage("only-matadora"));
             e.setCancelled(true);
             return;
         }
@@ -52,6 +59,11 @@ public class BossDamageListener implements Listener {
             String matadoraName = getMatadoraMetadata(itemInHand, "matadoraName");
             if (matadoraName != null) {
                 damage = plugin.getMatadoraConfig().getMatadoraDamage(matadoraName);
+
+                if (damage == 0) {
+                    damage = 999999999;
+                }
+
                 e.setDamage(damage);
             }
         }
@@ -59,17 +71,35 @@ public class BossDamageListener implements Listener {
         double health = boss.getHealth() - damage;
         health = Math.max(0, health);
 
-        String actionBarMessage = plugin.getBossConfig().getBossConfig()
-                .getString("bosses." + bossName + ".action-bar.on-hit", "");
+        String actionBarMessage = bossConfig.getString("action-bar.on-hit");
 
         if (!actionBarMessage.isEmpty()) {
+            int totalBars = 30;
+            int healthBars = (int) Math.round((health / boss.getMaxHealth()) * totalBars);
+            int emptyBars = totalBars - healthBars;
+
+            StringBuilder healthBar = new StringBuilder();
+            for (int i = 0; i < healthBars; i++) {
+                healthBar.append("|");
+            }
+
+            StringBuilder emptyBar = new StringBuilder();
+            for (int i = 0; i < emptyBars; i++) {
+                emptyBar.append("|");
+            }
+
             String formattedMessage = ChatColor.translateAlternateColorCodes('&', actionBarMessage)
                     .replace("{HEALTH}", String.valueOf((int) health))
                     .replace("{DAMAGE}", String.valueOf((int) damage))
-                    .replace("{PROGRESS-BAR}", ProgressBar.getBar((health / boss.getMaxHealth()) * 100, "|", "-", "§a", "§c", 10));
+                    .replace("{PROGRESS-BAR}", "§a" + healthBar + "§c" + emptyBar);
 
             ActionBar.sendActionBarMessage(player, formattedMessage);
         }
+
+        boss.setCustomName(ChatColor.translateAlternateColorCodes('&',
+                bossConfig.getString("name", bossName)
+                        .replace("{HEALTH}", String.valueOf(boss.getHealth() - damage))));
+        boss.setCustomNameVisible(true);
     }
 
     @EventHandler
@@ -79,6 +109,7 @@ public class BossDamageListener implements Listener {
         if (!boss.hasMetadata("bossName")) return;
 
         e.getDrops().clear();
+        e.setDroppedExp(0);
 
         String bossName = getBossMetadata(boss);
         if (bossName == null) return;
@@ -90,6 +121,17 @@ public class BossDamageListener implements Listener {
 
         Player player = boss.getKiller();
         if (player == null) return;
+
+        ItemStack item = player.getInventory().getItemInHand();
+        boolean isMatadora = isMatadora(item);
+        String matadoraName = isMatadora ? getMatadoraMetadata(item, "matadoraName") : null;
+
+        BossDeathEvent bossDeathEvent = new BossDeathEvent(player, boss, bossName, item, isMatadora, matadoraName);
+        plugin.getServer().getPluginManager().callEvent(bossDeathEvent);
+
+        if (bossDeathEvent.isCancelled()) return;
+
+        plugin.getDatabaseManager().addBossKilled(player);
 
         for (String reward : rewards) {
             String[] parts = reward.split(",");
@@ -114,8 +156,14 @@ public class BossDamageListener implements Listener {
                 .getStringList("bosses." + bossName + ".message-for-kill");
 
         for (String message : messages) {
-            player.sendMessage(message);
+            player.sendMessage(message.replace("&", "§"));
         }
+    }
+
+    @EventHandler
+    public void onMatadoraDamage(PlayerItemDamageEvent e) {
+        ItemStack item = e.getItem();
+        if (isMatadora(item)) e.setCancelled(true);
     }
 
     private String getBossMetadata(LivingEntity entity) {
@@ -129,22 +177,16 @@ public class BossDamageListener implements Listener {
     }
 
     private String getMatadoraMetadata(ItemStack item, String key) {
-        if (item == null || !item.hasItemMeta()) return null;
-        if (!item.getItemMeta().hasLore()) return null;
+        if (item == null) return null;
 
-        List<String> lore = item.getItemMeta().getLore();
-        for (String line : lore) {
-            if (ChatColor.stripColor(line).contains(key + ":")) {
-                return ChatColor.stripColor(line).split(":" , 2)[1].trim();
-            }
-        }
-
-        return null;
+        NBTItem nbtItem = new NBTItem(item);
+        return nbtItem.getString(key);
     }
 
     private boolean isMatadora(ItemStack item) {
-        if (item == null || !item.hasItemMeta()) return false;
-        return item.getItemMeta().getLore() != null && item.getItemMeta().getLore().stream()
-                .anyMatch(line -> ChatColor.stripColor(line).contains("Matadora"));
+        if (item == null || item.getType().equals(Material.AIR)) return false;
+
+        NBTItem nbtItem = new NBTItem(item);
+        return "matadora".equalsIgnoreCase(nbtItem.getString("itemType"));
     }
 }

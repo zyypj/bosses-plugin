@@ -1,5 +1,12 @@
 debug: true
 
+mysql:
+  host: localhost
+  port: 3306
+  database: minecraft
+  user: root
+  password: password
+
 # Caso seja true, o jogador conseguirá colocar o boss apenas nas plots
 only-plot: false
 
@@ -16,5 +23,10 @@ boss-per-player: 20
 # Aqui, todas as mensagens suportam tanto uma linha de mensagem ou uma lista de mensagens
 messages:
   no-permission: "&cVocê não tem permissão para isso!"
+  player-not-found: "&cJogador não encontrado: {NAME}"
+  boss-not-found: "&cBoss não encontrado: {NAME}"
+  matadora-not-found: "&cMatadora não encontrada: {NAME}"
+  cant-place: "&cVocê não pode colocar o boss aqui!"
   receive-boss: "&aVocê recebeu {AMOUNT}x do boss {BOSS-NAME}"
   receive-matadora: "&aVocê recebeu a matadora {MATADORA-NAME}"
+  only-matadora: "&cEsse boss recebe dano apenas de Matadoras!"
