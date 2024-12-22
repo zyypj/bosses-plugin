@@ -5,6 +5,8 @@ import com.github.zyypj.bosses.api.events.BossPlaceEvent;
 import com.github.zyypj.bosses.utils.ActionBar;
 import com.intellectualcrafters.plot.api.PlotAPI;
 import com.intellectualcrafters.plot.object.Plot;
+import com.kirelcodes.miniaturepets.loader.PetLoader;
+import com.kirelcodes.miniaturepets.pets.PetContainer;
 import de.tr7zw.nbtapi.NBTEntity;
 import de.tr7zw.nbtapi.NBTItem;
 import lombok.RequiredArgsConstructor;
@@ -20,11 +22,17 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 @RequiredArgsConstructor
 public class BossInteractListener implements Listener {
 
     private final BossesPlugin plugin;
     private final PlotAPI plotAPI = new PlotAPI();
+    private final Map<UUID, Long> cooldowns = new HashMap<>();
 
     @EventHandler
     public void onPlayerPlaceBoss(PlayerInteractEvent e) {
@@ -40,6 +48,26 @@ public class BossInteractListener implements Listener {
 
         e.setCancelled(true);
 
+        List<String> blockedWorlds = plugin.getConfig().getStringList("mundos-bloqueados");
+        if (blockedWorlds.contains(player.getWorld().getName())) {
+            player.sendMessage(plugin.getMessagesConfig().getMessage("cant-place"));
+            return;
+        }
+
+        long cooldownTime = plugin.getConfig().getLong("place-boss-cooldown", 2);
+        long currentTime = System.currentTimeMillis();
+
+        if (cooldowns.containsKey(player.getUniqueId())) {
+            long lastPlaceTime = cooldowns.get(player.getUniqueId());
+            if (currentTime - lastPlaceTime < cooldownTime) {
+                player.sendMessage(plugin.getMessagesConfig().getMessage("cooldown-message")
+                        .replace("{SECONDS}", String.valueOf((cooldownTime - (currentTime - lastPlaceTime)) / 1000)));
+                return;
+            }
+        }
+
+        cooldowns.put(player.getUniqueId(), currentTime);
+
         var bossConfig = plugin.getBossConfig().getBossConfig().getConfigurationSection("bosses." + bossName);
 
         if (bossConfig == null) {
@@ -48,16 +76,46 @@ public class BossInteractListener implements Listener {
             return;
         }
 
-        EntityType entityType;
-        try {
-            entityType = EntityType.valueOf(bossConfig.getString("entity", "ZOMBIE"));
-        } catch (IllegalArgumentException ex) {
-            player.sendMessage("§cEntidade não encontrada, contacte um administrador: " + bossName);
-            plugin.debug("§cErro ao identificar a entidade: " + ex.getMessage(), true);
-            return;
-        }
+        LivingEntity boss = null;
 
-        LivingEntity boss = (LivingEntity) player.getWorld().spawnEntity(player.getLocation(), entityType);
+        if (bossConfig.getString("entity").equalsIgnoreCase("MINIATURE_PETS")) {
+            String petName = bossConfig.getString("pet");
+            if (petName == null || petName.isEmpty()) {
+                player.sendMessage("§cO nome do pet não está configurado! Contacte um administrador.");
+                return;
+            }
+
+            PetContainer petC = PetLoader.getPet(petName.toLowerCase());
+            if (petC == null) {
+                player.sendMessage("§cPet não encontrado: " + petName);
+                return;
+            }
+
+            if (petC.hasPermission() && !player.hasPermission(petC.getPermission().toLowerCase())) {
+                player.sendMessage("§cVocê não tem permissão para colocar este pet: " + petName);
+                return;
+            }
+
+            var pet = petC.spawnPet(player);
+            if (pet == null) {
+                player.sendMessage("§cErro ao spawnar o pet: " + petName);
+                return;
+            }
+
+            boss = pet.getNavigator();
+        } else {
+            EntityType entityType;
+
+            try {
+                entityType = EntityType.valueOf(bossConfig.getString("entity", "ZOMBIE"));
+            } catch (IllegalArgumentException ex) {
+                player.sendMessage("§cEntidade não encontrada, contacte um administrador: " + bossName);
+                plugin.debug("§cErro ao identificar a entidade: " + ex.getMessage(), true);
+                return;
+            }
+
+            boss = (LivingEntity) player.getWorld().spawnEntity(player.getLocation(), entityType);
+        }
 
         BossPlaceEvent bossPlaceEvent = new BossPlaceEvent(player, boss, bossName, item);
         plugin.getServer().getPluginManager().callEvent(bossPlaceEvent);
@@ -66,8 +124,6 @@ public class BossInteractListener implements Listener {
             boss.remove();
             return;
         }
-
-        plugin.getDatabaseManager().addBossPlaced(player);
 
         Plot plot = plotAPI.getPlot(player.getLocation());
         if (plot == null) {
@@ -112,6 +168,8 @@ public class BossInteractListener implements Listener {
             player.getInventory().setItemInHand(null);
         }
 
+        plugin.getDatabaseManager().addBossPlaced(player);
+
         String actionBarMessage = bossConfig.getString("action-bar.on-interact");
 
         if (!actionBarMessage.isEmpty()) {
@@ -152,7 +210,6 @@ public class BossInteractListener implements Listener {
         if (bossName == null || bossName.isEmpty()) return;
 
         Player player = event.getPlayer();
-        plugin.debug("§aInteração com o boss: " + bossName, true);
 
         double health = entity.getHealth();
         double maxHealth = entity.getMaxHealth();

@@ -12,7 +12,26 @@ recompensas:
         - ''
 
     money: 0
+    message: "&aVocê recebeu uma &8Pedra&a!"
     command:
-      use-command: true
+      use-command: false
+      commands:
+        - 'give {PLAYER} stone {AMOUNT}'
+  reco2:
+    item:
+      material: EMERALD_BLOCK:0
+      # Se true, o item será "brilhará"
+      glow: true
+      name: "&22k de Coins"
+      amount: 2
+      lore:
+        - "&7Isso tudo?"
+      enchants:
+        - ''
+
+    money: 2000
+    message: "&aVocê recebeu &22k de coins&a!"
+    command:
+      use-command: false
       commands:
         - 'give {PLAYER} stone {AMOUNT}'

@@ -1,6 +1,8 @@
 bosses:
   BossCreeper:
+    # MINIATURE_PET se for do mPets
     entity: 'CREEPER'
+    pet: '' # Nome do PET do mPets
     health: 1000
     name: "&a&lBOSS CREEPER &c❤{HEALTH}"
     only-matadora: true
@@ -13,13 +15,15 @@ bosses:
       name: "&a&lBOSS CREAPER"
       lore:
         - "&fHP: &4❤&c1000&f"
+        - " "
+        - "&eShift + Clique-Direito para ver minhas recompensas!"
 
     options:
       ai: false
 
     message-for-kill:
         - ""
-        - "&a&lBOSS CREEPER: &7Parabéns guerreiro, você conseguiu me matar. Recolha suas recompensas no &f&n/boss&7."
+        - "&a&lBOSS CREEPER: &7Parabéns guerreiro, você conseguiu me matar."
         - ""
 
     action-bar:

@@ -65,6 +65,11 @@
           <url>https://repo.codemc.io/repository/maven-public/</url>
           <layout>default</layout>
       </repository>
+
+      <repository>
+          <id>placeholderapi</id>
+          <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
+      </repository>
   </repositories>
 
   <dependencies>
@@ -96,6 +101,27 @@
           <version>1.0.0</version>
           <scope>system</scope>
           <systemPath>C:/Users/zyypj/Documents/IntelliJ/Bletzii/Dependencies/PlotSquared.jar</systemPath>
+      </dependency>
+
+      <dependency>
+          <groupId>me.clip</groupId>
+          <artifactId>placeholderapi</artifactId>
+          <version>2.11.6</version>
+          <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+          <groupId>me.devnatan</groupId>
+          <artifactId>inventory-framework-platform-bukkit</artifactId>
+          <version>3.0.8</version>
+      </dependency>
+
+      <dependency>
+          <groupId>com.kirelcodes</groupId>
+          <artifactId>MiniaturePets</artifactId>
+          <version>2.8.8</version>
+          <scope>system</scope>
+          <systemPath>C:/Users/zyypj/Documents/IntelliJ/Bletzii/Dependencies/MiniaturePets.jar</systemPath>
       </dependency>
   </dependencies>
 </project>

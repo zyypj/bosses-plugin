@@ -2,11 +2,12 @@ package com.github.zyypj.bosses.listeners;
 
 import com.github.zyypj.bosses.BossesPlugin;
 import com.github.zyypj.bosses.api.events.BossDeathEvent;
+import com.github.zyypj.bosses.hooks.CurrencyHook;
 import com.github.zyypj.bosses.utils.ActionBar;
-import com.github.zyypj.bosses.utils.ProgressBar;
 import de.tr7zw.nbtapi.NBTItem;
 import lombok.RequiredArgsConstructor;
 import lombok.var;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
@@ -44,12 +45,10 @@ public class BossDamageListener implements Listener {
 
         var bossConfig = plugin.getBossConfig().getBossConfig().getConfigurationSection("bosses." + bossName);
 
-        boolean onlyMatadora = bossConfig.getBoolean("only-matadora");
-
         ItemStack itemInHand = player.getInventory().getItemInHand();
         double damage = e.getDamage();
 
-        if (onlyMatadora && !isMatadora(itemInHand)) {
+        if (bossConfig.getBoolean("only-matadora") && !isMatadora(itemInHand)) {
             player.sendMessage(plugin.getMessagesConfig().getMessage("only-matadora"));
             e.setCancelled(true);
             return;
@@ -141,14 +140,37 @@ public class BossDamageListener implements Listener {
             String rewardKey = parts[1];
 
             if (random.nextInt(100) < chance) {
-                ItemStack rewardItem = plugin.getRecompensasConfig().getRewardItem(rewardKey);
-                if (rewardItem != null) {
+                var rewardSection = plugin.getRecompensasConfig().getRecompensasConfig().getConfigurationSection("recompensas." + rewardKey);
+                if (rewardSection == null) continue;
+
+                int money = rewardSection.getInt("money", 0);
+                if (money != 0) {
+                    CurrencyHook.addBalance(player, money);
+                    return;
+                }
+
+                if (rewardSection.getBoolean("command.use-command", false)) {
+                    List<String> commands = rewardSection.getStringList("command.commands");
+                    for (String command : commands) {
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command
+                                .replace("{PLAYER}", player.getName())
+                                .replace("{AMOUNT}", String.valueOf(plugin.getRecompensasConfig().getRewardItem(rewardKey).getAmount())));
+                    }
+                } else {
+                    ItemStack rewardItem = plugin.getRecompensasConfig().getRewardItem(rewardKey);
+                    if (rewardItem == null) {
+                        player.sendMessage("§cRecompensa não encontrada, contacte um administrador: " + rewardKey);
+                        return;
+                    }
+
                     if (player.getInventory().firstEmpty() != -1) {
                         player.getInventory().addItem(rewardItem);
                     } else {
-                        player.getWorld().dropItemNaturally(player.getLocation(), rewardItem);
+                        player.getWorld().dropItem(player.getLocation(), rewardItem);
                     }
                 }
+
+                player.sendMessage(rewardSection.getString("message").replace("&", "§"));
             }
         }
 

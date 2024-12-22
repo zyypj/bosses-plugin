@@ -10,6 +10,7 @@ import java.sql.*;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Getter
 public class DatabaseManager {
 
     private final BossesPlugin plugin;

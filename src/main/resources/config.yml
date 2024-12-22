@@ -7,11 +7,7 @@ mysql:
   user: root
   password: password
 
-# Caso seja true, o jogador conseguirá colocar o boss apenas nas plots
-only-plot: false
-
-# Caso seja true, a matadora não quebrará
-matadora-inquebravel: true
+place-boss-cooldown: 2
 
 mundos-bloqueados:
   - "world1"
@@ -26,7 +22,14 @@ messages:
   player-not-found: "&cJogador não encontrado: {NAME}"
   boss-not-found: "&cBoss não encontrado: {NAME}"
   matadora-not-found: "&cMatadora não encontrada: {NAME}"
-  cant-place: "&cVocê não pode colocar o boss aqui!"
+  cant-place: "&cVocê pode colocar o boss apenas na sua plot ou em plots que você tem permissão!"
   receive-boss: "&aVocê recebeu {AMOUNT}x do boss {BOSS-NAME}"
   receive-matadora: "&aVocê recebeu a matadora {MATADORA-NAME}"
   only-matadora: "&cEsse boss recebe dano apenas de Matadoras!"
+  cooldown-message: "&cAguarde mais {SECONDS}s para fazer isso!"
+  boss-no-have-awards: "&cEsse boss não tem nenhuma recompensa!"
+  reward-menu:
+    title: "Recompensas de {BOSS-NAME}"
+    lore-added:
+      - " "
+      - "&7Chance: {CHANCE}%"
